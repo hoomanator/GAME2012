@@ -1,9 +1,15 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include<iostream>
+#include <random>
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+
+float Random(float min, float max)
+{
+	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));
+}
 
 int main(void)
 {
@@ -40,6 +46,10 @@ int main(void)
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
+		double x = Random(0.0f, SCREEN_WIDTH);
+		double y = Random(0.0f, SCREEN_HEIGHT);
+		glfwSetCursorPos(window, x, y);
+
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
 
@@ -58,6 +68,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 		printf("%s\n", name);
 	}
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 
 	//if (key == GLFW_KEY_E && action == GLFW_PRESS)
 	//    activate_airship();
