@@ -1,74 +1,113 @@
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-#include<iostream>
-#include <random>
+#include "Window.h"
+#include <glad/glad.h>
+#include <cstddef>
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-
-float Random(float min, float max)
+struct vec2
 {
-	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));
-}
+    float x;    // x is 4 bytes
+    float y;    // y is 4 bytes
+};
 
-int main(void)
+struct vec3
 {
-	constexpr int SCREEN_WIDTH = 1280;
-	constexpr int SCREEN_HEIGHT = 720;
+    float x;
+    float y;
+    float z;
+};
 
-	GLFWwindow* window;
-
-	/* Initialize the library */
-	if (!glfwInit())
-		return -1;
-
-	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello OpenGL", NULL, NULL);
-	if (!window)
-	{
-		glfwTerminate();
-		return -1;
-	}
-
-	/* Make the window's context current */
-	glfwMakeContextCurrent(window);
-
-	/* Load OpenGL 4.6*/
-	gladLoadGL();
-
-	glfwSetKeyCallback(window, key_callback);
-
-	/* Loop until the user closes the window */
-	while (!glfwWindowShouldClose(window))
-	{
-		/* Render here */
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
-		//double x = Random(0.0f, SCREEN_WIDTH);
-		//double y = Random(0.0f, SCREEN_HEIGHT);
-		//glfwSetCursorPos(window, x, y);
-
-		/* Swap front and back buffers */
-		glfwSwapBuffers(window);
-
-		/* Poll for and process events */
-		glfwPollEvents();
-	}
-
-	glfwTerminate();
-	return 0;
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+struct Vertex
 {
-	const char* name = glfwGetKeyName(key, scancode);
-	if (action == GLFW_PRESS)
-	{
-		printf("%s\n", name);
-	}
+    vec2 pos;   // offset of 0
+    vec3 col;   // offset of 8 (4 bytes for pos.x + 4 bytes for pos.y = 8)
+};
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
+static const Vertex vertices[3] =
+{
+    { { -0.6f, -0.4f }, { 1.f, 0.f, 0.f } },
+    { {  0.6f, -0.4f }, { 0.f, 1.f, 0.f } },
+    { {   0.f,  0.6f }, { 0.f, 0.f, 1.f } }
+};
+
+static const char* vertex_shader_text =
+"#version 330\n"
+"in vec3 vCol;\n"
+"in vec2 vPos;\n"
+"out vec3 color;\n"
+"void main()\n"
+"{\n"
+"    gl_Position = vec4(vPos, 0.0, 1.0);\n"
+"    color = vCol;\n"
+"}\n";
+
+static const char* fragment_shader_text =
+"#version 330\n"
+"in vec3 color;\n"
+"out vec4 fragColor;\n"
+"void main()\n"
+"{\n"
+"    fragColor = vec4(color, 1.0);\n"
+"}\n";
+
+int main()
+{
+    CreateWindow(800, 800, "Graphics 1");
+
+    GLuint vertex_buffer;
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+    glCompileShader(vertex_shader);
+
+    const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+    glCompileShader(fragment_shader);
+
+    const GLuint program = glCreateProgram();
+    glAttachShader(program, vertex_shader);
+    glAttachShader(program, fragment_shader);
+    glLinkProgram(program);
+
+    //const GLint mvp_location = glGetUniformLocation(program, "MVP");
+    const GLint vpos_location = glGetAttribLocation(program, "vPos");
+    const GLint vcol_location = glGetAttribLocation(program, "vCol");
+
+    GLuint vertex_array;
+    glGenVertexArrays(1, &vertex_array);
+    glBindVertexArray(vertex_array);
+
+    glEnableVertexAttribArray(vpos_location);
+    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos));
+
+    glEnableVertexAttribArray(vcol_location);
+    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, col));
+
+    /* Loop until the user closes the window */
+    while (!WindowShouldClose())
+    {
+        if (IsKeyPressed(KEY_ESCAPE))
+            SetWindowShouldClose(true);
+
+        // Colors are represented as fractions between 0.0 and 1.0, so convert using a colour-picker tool accordingly!
+        float r = 239.0f / 255.0f;
+        float g = 136.0f / 255.0f;
+        float b = 190.0f / 255.0f;
+        float a = 1.0f;
+
+        /* Render here */
+        glClearColor(r, g, b, a);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(program);
+        glBindVertexArray(vertex_array);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // Called at end of the frame to swap buffers and update input
+        Loop();
+    }
+
+    DestroyWindow();
+    return 0;
 }
