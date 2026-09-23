@@ -91,6 +91,8 @@
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\shaders\a1_triangle.frag" />
+    <None Include="assets\shaders\a1_triangle.vert" />
     <None Include="ReadMe.md" />
   </ItemGroup>
   <ItemGroup>

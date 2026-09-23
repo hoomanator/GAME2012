@@ -30,6 +30,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.md" />
+    <None Include="assets\shaders\a1_triangle.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="assets\shaders\a1_triangle.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Window.h">
