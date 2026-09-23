@@ -8,7 +8,7 @@
 
 struct App
 {
-    GLFWwindow* window = nullptr;
+	GLFWwindow* window = nullptr;
     int keysPrev[KEY_COUNT]{};
     int keysCurr[KEY_COUNT]{};
 } gApp;
@@ -17,7 +17,7 @@ void KeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 {
     if (action == GLFW_REPEAT) return;
     gApp.keysCurr[key] = action;
-
+    
     // Uncomment to see how key events work!
     //const char* name = glfwGetKeyName(key, scancode);
     //if (action == GLFW_PRESS)
@@ -136,7 +136,7 @@ bool IsKeyUp(int key)
 
 bool IsKeyPressed(int key)
 {
-    return
+    return 
         gApp.keysPrev[key] == GLFW_PRESS &&
         gApp.keysCurr[key] == GLFW_RELEASE;
 }
